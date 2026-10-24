@@ -1,106 +1,78 @@
-# 🦊 frontend-template
+# Festtag
 
-[![coverage](https://raw.githubusercontent.com/schlaufuchs26/frontend-template/badge/coverage.svg)](https://github.com/schlaufuchs26/frontend-template/actions/workflows/test.yml?query=branch%3Amain)
+A country, hidden in its public holidays.
 
-Minimal [Bun](https://bun.sh) + TypeScript + React starter for static web projects. Ships to GitHub Pages, devs locally with HMR.
+Eight rounds. Each one shows a year of public holidays with the names in the
+country's own language, and nothing else: no map, no flag, no population. Guess
+the country, then read what the calendar was actually telling you.
 
-## Quick Start
+Live: https://schlaufuchs26.github.io/festtag/
+
+## How to play
+
+- 8 rounds, 3 guesses each, 100 / 60 / 30 points depending on the guess.
+- Two hints: the continent (−15), then the flag and population (−15).
+- A wrong guess tells you whether you were at least on the right continent.
+- The reveal shows every holiday in English, plus the one fact the calendar was
+  built around: how many of the 141 countries in the game share its rarest
+  holiday, and which ones they are.
+
+## Two ways in (inference routes)
+
+The point of the game is that a list of holidays can be read in two independent
+ways, and the second one needs no specialist knowledge.
+
+**Route 1: the shape of the year, no prior knowledge needed.** Read the
+calendar like a story about a place.
+
+- Which days are *missing*. A country without 25 December is not a
+  Christian-majority country; a country without 1 May did not inherit the
+  socialist or Catholic labour movement. Absences narrow faster than presences.
+- The religion in the list. Eid al-Fitr and Eid al-Adha, Orthodox Christmas on
+  7 January, Coptic Easter, Nowruz on 21 March, Carnival, All Saints: each one
+  puts you in a region before you know a single word.
+- The names themselves. `Tweede Kerstdag`, `Wapenstilstand`, `Vrijheidsdag` read
+  as Germanic; `Fête du Travail`, `Jour de l'An` as Romance; `Zweiter
+  Weihnachtstag` as German rather than Dutch; `Koninginnedag`/`Koningsdag` as
+  Dutch rather than Flemish.
+- How many days off. 8 holidays with three of them religious points one way, 16
+  with two "bridge" days around them points at a country that likes its long
+  weekends.
+- Which historical dates appear. 27 April, 14 July, 3 October, 12 October, 5
+  July, 16 September: if the date is familiar, the country follows.
+
+**Route 2: the content, with world knowledge.** Once a date or a name rings a
+bell, the round is usually over: `Tag der Deutschen Einheit` on 3 October,
+`Koningsdag` on 27 April, `Mashujaa Day`, `Jamhuri Day`, `Ntaryamira Day`,
+`Quame Nkrumah Memorial Day`. The reveal is written so that a round you lost
+still teaches you one of these.
+
+Both routes are independent: a player who has never heard of Ntaryamira can
+still place Burundi in East Africa from Kinyarwanda-shaped names and a calendar
+of Catholic feast days; a player who knows the date can ignore the language.
+
+## Data
+
+- Public holidays and their local names: [Nager.Date](https://date.nager.at),
+  2026, national-level public holidays only.
+- Population: World Bank `SP.POP.TOTL`, 2024.
+- 141 sovereign states have a complete enough list to play; territories,
+  dependencies and countries with fewer than 8 national holidays are left out
+  (the API's list for the UK, Switzerland and Mexico is cantonal or regional, so
+  those are out too).
+
+`bun scripts/build-holidays.ts` regenerates `src/data/holidays.json` from both
+APIs. The game itself never fetches anything at runtime.
+
+## Development
 
 ```bash
-curl -fsSL https://bun.sh/install | bash  # if you haven't already
-
-git clone https://github.com/schlaufuchs26/frontend-template.git
-cd frontend-template
 bun install
-bun dev
+bun run dev          # http://localhost:3000
+bun run checks       # format, tsc, biome, knip, tests
+bun run test:e2e     # Playwright smoke test
+bun run build        # static bundle in dist/
 ```
 
-Open [http://localhost:3000](http://localhost:3000).
-
-## Structure
-
-```
-index.html          — entry point for dev server and production build
-frontend.tsx         — React app (TSX)
-package.json        — React 19 + dev tooling
-tsconfig.json       — strict TS, ESNext
-bunfig.toml         — test preload + coverage thresholds
-biome.json          — formatter + linter config
-knip.json           — dead code detection
-playwright.config.ts — browser-test config (dev-server, Chromium path)
-.githooks/          — pre-commit hook (runs bun run checks)
-.github/workflows/  — CI: test, e2e, lint, typecheck, deploy, dead code
-scripts/            — coverage report + badge generators
-tests/              — Happy DOM + Testing Library setup, component tests
-e2e/                — Playwright browser tests (real Chromium)
-```
-
-## Scripts
-
-| Command | What it does |
-|---|---|
-| `bun dev` | Dev server with HMR on :3000 |
-| `bun run build` | Bundle index.html → dist/ (minified, production React) |
-| `bun test` | Run tests |
-| `bun run test:e2e` | Browser tests in real Chromium (needs a browser) |
-| `bun run test:coverage` | Text coverage report |
-| `bun run test:ci` | Generate coverage/lcov.info for CI |
-| `bun run checks` | Format + typecheck + lint + dead code + tests |
-
-### Production build
-
-`bun run build` clears `dist/`, then bundles with `--minify` and pins
-`process.env.NODE_ENV="production"`. Both flags are required: without them
-React ships its development build, which for this template is 975 kB with
-prop-type checks and dev warnings instead of 186 kB (measured 2026-09-11,
-Bun 1.3.13). Verify a build with `grep -c "process.env" dist/*.js` (prints
-0 when the define applied); `tests/build.test.ts` runs the build and fails
-on dev-only code.
-
-## Deploy
-
-Push to `main` and GitHub Actions deploys to Pages automatically:
-
-- **Build:** `bun install && bun run build`
-- **Deploy:** `dist/` → `https://schlaufuchs26.github.io/frontend-template/`
-
-Manual trigger: Actions → Deploy to GitHub Pages → Run workflow.
-
-## Testing
-
-Bun's built-in test runner + Happy DOM + Testing Library. Pre-configured in `bunfig.toml`. Tests auto-discover: `*.test.{ts,tsx}`, `*.spec.{ts,tsx}`.
-
-```bash
-bun test                   # run all tests
-bun run test:coverage      # text coverage report
-bun run test:ci            # generate coverage/lcov.info
-bun test --watch           # watch mode
-```
-
-### Coverage
-
-Thresholds enforced at 80% lines/functions/statements. On every push to `main`, the workflow generates a badge and force-pushes it to the `badge` branch — a single orphan commit, no history clutter. PRs get a sticky comment with per-file coverage.
-
-### Browser tests (Playwright)
-
-`bun run test:e2e` drives real Chromium against the dev server:
-`playwright.config.ts` starts `bun index.html` on port 4173, and
-`e2e/smoke.playwright.ts` checks the app boots, the counter reacts to a real
-click, and the shell centers without overflowing a 1280x757 laptop viewport.
-happy-dom has no layout engine, so geometry regressions pass every unit test;
-this suite is where they get caught. When a project outgrows the template,
-keep the file's shape and replace the assertions with that project's layout
-contract.
-
-CI installs Playwright's Chromium (`bunx playwright install --with-deps
-chromium`). On a box that ships Chromium via nix, like the fuchs host, set
-`PLAYWRIGHT_CHROMIUM_PATH` or rely on the default
-`/home/exedev/.nix-profile/bin/chromium` when it exists. A failing run uploads
-its HTML report as a workflow artifact.
-
-## Philosophy
-
-- **Zero-config dev server.** `bun index.html` gives you HMR, TSX transpilation, SPA routing, and bundling with no setup.
-- **No framework lock-in.** Just React. Swap to Vue, Svelte, or vanilla — change `frontend.tsx` and go.
-- **HTML-first.** Same `index.html` is the dev entry point and the build entry point. No dual files, no glue code.
-- **Grows with you.** Start here, add Tailwind, shadcn, whatever. No scaffolding to undo.
+Built with Bun, React 19 and TypeScript, from
+[frontend-template](https://github.com/schlaufuchs26/frontend-template).

@@ -1,0 +1,390 @@
+:root {
+  --bg: #0e0d0c;
+  --surface: #1a1816;
+  --surface-2: #24201d;
+  --line: #332e29;
+  --text: #efe9e1;
+  --muted: #9c948a;
+  --accent: #f0a040;
+  --good: #8fbf6a;
+  --bad: #d9704a;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  background: radial-gradient(circle at 50% -10%, #241f1a 0%, var(--bg) 55%);
+  color: var(--text);
+  font-family: ui-sans-serif, system-ui, -apple-system, sans-serif;
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+}
+
+#root {
+  width: 100%;
+  max-width: 720px;
+  padding: 28px 16px 56px;
+}
+
+.shell {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.topbar {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.brand {
+  font-size: 1.5rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+.brand span {
+  color: var(--accent);
+}
+
+.tagline {
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+
+.stats {
+  font-size: 0.85rem;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.stats strong {
+  color: var(--text);
+  font-weight: 600;
+}
+
+.card {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.card-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.card-head h2 {
+  font-size: 0.95rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.months {
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  gap: 4px;
+}
+
+.month {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.62rem;
+  color: var(--muted);
+  letter-spacing: 0.04em;
+}
+
+.month .dots {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-height: 26px;
+  align-items: center;
+  padding-top: 2px;
+}
+
+.dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--accent);
+}
+
+.dot.common {
+  background: var(--line);
+}
+
+.holidays {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.holiday {
+  display: grid;
+  grid-template-columns: 62px 1fr auto;
+  gap: 10px;
+  align-items: baseline;
+  padding: 7px 8px;
+  border-radius: 8px;
+  background: var(--surface-2);
+  font-size: 0.95rem;
+}
+
+.holiday .date {
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+  font-size: 0.82rem;
+}
+
+.holiday .days {
+  color: var(--muted);
+  font-size: 0.75rem;
+}
+
+.holiday.rare {
+  box-shadow: inset 3px 0 0 var(--accent);
+}
+
+.hint-line {
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+
+.guessbox {
+  position: relative;
+  display: flex;
+  gap: 8px;
+}
+
+input[type="text"] {
+  flex: 1;
+  background: var(--bg);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  color: var(--text);
+  padding: 11px 13px;
+  font-size: 0.95rem;
+  font-family: inherit;
+}
+
+input[type="text"]:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+button {
+  font-family: inherit;
+  cursor: pointer;
+}
+
+.primary {
+  background: var(--accent);
+  color: #1a1000;
+  border: none;
+  border-radius: 10px;
+  padding: 11px 18px;
+  font-size: 0.95rem;
+  font-weight: 600;
+}
+
+.primary:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
+.ghost {
+  background: transparent;
+  border: 1px solid var(--line);
+  color: var(--muted);
+  border-radius: 999px;
+  padding: 6px 12px;
+  font-size: 0.8rem;
+}
+
+.ghost:hover:not(:disabled) {
+  border-color: var(--accent);
+  color: var(--text);
+}
+
+.suggestions {
+  position: absolute;
+  top: 46px;
+  left: 0;
+  right: 96px;
+  background: var(--surface-2);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  overflow: hidden;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+}
+
+.suggestions button {
+  background: none;
+  border: none;
+  color: var(--text);
+  text-align: left;
+  padding: 9px 13px;
+  font-size: 0.9rem;
+}
+
+.suggestions button:hover,
+.suggestions button.active {
+  background: var(--accent);
+  color: #1a1000;
+}
+
+.row {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.feedback {
+  font-size: 0.88rem;
+  min-height: 1.2em;
+}
+
+.feedback.bad {
+  color: var(--bad);
+}
+
+.feedback.good {
+  color: var(--good);
+}
+
+.reveal-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.reveal-head .flag {
+  font-size: 2rem;
+  line-height: 1;
+}
+
+.reveal-head h3 {
+  font-size: 1.3rem;
+  font-weight: 700;
+}
+
+.reveal-meta {
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+
+.fact {
+  background: var(--surface-2);
+  border-left: 3px solid var(--accent);
+  border-radius: 8px;
+  padding: 11px 13px;
+  font-size: 0.88rem;
+  line-height: 1.5;
+}
+
+table.holidays-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.85rem;
+}
+
+table.holidays-table td {
+  padding: 6px 4px;
+  border-bottom: 1px solid var(--line);
+  vertical-align: baseline;
+}
+
+table.holidays-table td:first-child {
+  color: var(--muted);
+  width: 62px;
+  font-variant-numeric: tabular-nums;
+}
+
+table.holidays-table td:last-child {
+  color: var(--muted);
+  text-align: right;
+  width: 40%;
+}
+
+table.holidays-table tr.rare td:last-child {
+  color: var(--accent);
+}
+
+.summary-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 0.88rem;
+}
+
+.summary-list div {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 6px 8px;
+  border-radius: 8px;
+  background: var(--surface-2);
+}
+
+.summary-list .pts {
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.big-score {
+  font-size: 2.6rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.big-score small {
+  font-size: 1rem;
+  color: var(--muted);
+  font-weight: 400;
+}
+
+.howto {
+  font-size: 0.82rem;
+  color: var(--muted);
+  line-height: 1.6;
+}
+
+.howto b {
+  color: var(--text);
+  font-weight: 600;
+}
+
+@media (max-width: 480px) {
+  .holiday {
+    grid-template-columns: 52px 1fr auto;
+    font-size: 0.88rem;
+  }
+
+  .suggestions {
+    right: 0;
+  }
+}
