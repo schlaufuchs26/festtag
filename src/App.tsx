@@ -186,8 +186,8 @@ export function App({ seed }: { seed?: number }) {
             {answer.holidays.length} public holidays
           </span>
         </div>
-        <CalendarStrip holidays={answer.holidays} />
-        <HolidayList holidays={shown} />
+        <CalendarStrip holidays={answer.holidays} country={answer} />
+        <HolidayList holidays={shown} country={answer} />
         {hidden > 0 && (
           <div className="hint-line">
             {hidden} more, mostly the ones every country has.
@@ -257,9 +257,10 @@ export function App({ seed }: { seed?: number }) {
       )}
 
       <p className="howto">
-        <b>How to play:</b> eight countries, ten holidays each, no names
-        translated. Read the language, the dates and the religion in the list.
-        Three guesses per country; two hints cost 15 points each.
+        <b>How to play:</b> eight countries, ten holidays each, in English. Read
+        what the days celebrate, which season they fall in, and which religion
+        they belong to. Three guesses per country; two hints cost 15 points
+        each. The native names come with the answer.
       </p>
     </div>
   );

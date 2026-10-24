@@ -25,7 +25,9 @@ test("the calendar of a round boots in a real browser", async ({ page }) => {
   expect(await holidays.count()).toBeGreaterThanOrEqual(8);
   await expect(page.locator(".month")).toHaveCount(12);
 
-  // The English names stay hidden until the reveal.
+  // The clue card shows English names only; native names come with the answer.
+  await expect(page.locator(".holiday .name").first()).toBeVisible();
+  await expect(page.locator(".holiday .local")).toHaveCount(0);
   await expect(page.getByTestId("reveal")).toHaveCount(0);
   expect(pageErrors).toEqual([]);
 });

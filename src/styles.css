@@ -321,17 +321,21 @@ table.holidays-table td {
 table.holidays-table td:first-child {
   color: var(--muted);
   width: 62px;
+  vertical-align: top;
   font-variant-numeric: tabular-nums;
 }
 
-table.holidays-table td:last-child {
-  color: var(--muted);
-  text-align: right;
-  width: 40%;
+table.holidays-table tr.rare td:nth-child(2) {
+  color: var(--accent);
 }
 
-table.holidays-table tr.rare td:last-child {
-  color: var(--accent);
+/* The native name sits under the English one, small: the interesting part
+   once the guess is made, invisible while guessing. */
+table.holidays-table .native {
+  display: block;
+  margin-top: 1px;
+  color: var(--muted);
+  font-size: 0.76rem;
 }
 
 .summary-list {

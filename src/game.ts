@@ -1,3 +1,4 @@
+import { DEMONYMS, NEUTRAL_LABELS } from "./data/neutral-labels";
 import type { Country, GuessResult, Holiday } from "./types";
 
 export const ROUNDS = 8;
@@ -198,4 +199,55 @@ export function medianHolidayCount(countries: Country[]): number {
   if (counts.length === 0) return 0;
   if (counts.length % 2 === 1) return counts[middle] ?? 0;
   return Math.round(((counts[middle - 1] ?? 0) + (counts[middle] ?? 0)) / 2);
+}
+
+/** The part of a country's name that its adjective shares ("Russi" for both
+ * "Russia" and "Russian"); the whole name for short ones. */
+function nameStem(country: Country): string {
+  const name = country.name.toLowerCase();
+  return name.length > 5 ? name.slice(0, -2) : name;
+}
+
+/** True when an English holiday name names its own country, which would solve
+ * the round by itself. */
+export function refersToCountry(label: string, country: Country): boolean {
+  const text = label.toLowerCase();
+  if (text.includes(nameStem(country))) return true;
+  return (DEMONYMS[country.code] ?? []).some((form) => text.includes(form));
+}
+
+/**
+ * Last resort when the table in `data/neutral-labels.ts` has no entry yet: cut
+ * the country reference out instead of printing it. The clue card reads
+ * "Day" rather than "Canada Day"; a test names the missing entry.
+ */
+function withoutCountry(label: string, country: Country): string {
+  // The whole name with its word tail, so "Canada" also takes "Canadian" with
+  // it; adjectives that share no stem with the name come from DEMONYMS.
+  const forms = [country.name, ...(DEMONYMS[country.code] ?? [])];
+  let text = label;
+  for (const form of forms) {
+    const escaped = form.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    text = text.replace(new RegExp(`\\b${escaped}\\w*\\b`, "gi"), " ");
+  }
+  const tidied = text
+    .replace(/\s+/g, " ")
+    .replace(/\s+([,.)])/g, "$1")
+    .replace(/^[\s,()]+|[\s,()]+$/g, "")
+    .replace(/\s+(of|the|and|for|in)$/i, "")
+    .trim();
+  return tidied === "" ? "Public holiday" : tidied;
+}
+
+/**
+ * The name a round shows for a holiday: the English one, because the game is
+ * about what the day celebrates, not about which language spells it. Native
+ * names appear in the reveal only.
+ */
+export function clueLabel(holiday: Holiday, country: Country): string {
+  const neutral = NEUTRAL_LABELS[`${country.code}|${holiday.en}`];
+  if (neutral) return neutral;
+  return refersToCountry(holiday.en, country)
+    ? withoutCountry(holiday.en, country)
+    : holiday.en;
 }

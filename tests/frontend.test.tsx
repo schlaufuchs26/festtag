@@ -3,6 +3,7 @@ import { fireEvent, render, screen, within } from "@testing-library/react";
 import { App } from "../src/App";
 import dataset from "../src/data/holidays.json";
 import {
+  clueLabel,
   formatDate,
   mulberry32,
   pickRounds,
@@ -33,9 +34,14 @@ describe("App", () => {
     if (!firstHoliday) throw new Error("no holidays");
     expect(screen.getByText(formatDate(firstHoliday.date))).toBeInTheDocument();
 
-    // Every shown holiday carries its local name.
+    // Every shown holiday carries its English name, not its native one.
     for (const holiday of firstShown) {
-      expect(screen.getAllByText(holiday.local).length).toBeGreaterThan(0);
+      expect(
+        screen.getAllByText(clueLabel(holiday, first)).length,
+      ).toBeGreaterThan(0);
+      if (holiday.local !== holiday.en) {
+        expect(screen.queryByText(holiday.local)).toBeNull();
+      }
     }
     // The country's own name is the answer; it must not be on the clue card.
     expect(screen.queryByTestId("reveal")).toBeNull();
@@ -64,6 +70,26 @@ describe("App", () => {
       "Not one of the countries",
     );
     expect(screen.getByText(/3 of 3 guesses left/)).toBeInTheDocument();
+  });
+
+  test("the native names appear only in the reveal", () => {
+    // Seed 2 opens on a country whose names are not English, which is where
+    // the difference between the clue and the reveal shows.
+    const NATIVE_SEED = 2;
+    const answer = pickRounds(
+      data.countries,
+      ROUNDS,
+      mulberry32(NATIVE_SEED),
+    )[0] as Country;
+    const native = answer.holidays.find((h) => h.local !== h.en);
+    if (!native) throw new Error("no holiday with a native name");
+    render(<App seed={NATIVE_SEED} />);
+    expect(screen.queryByText(native.local)).toBeNull();
+
+    const input = screen.getByLabelText("Which country?");
+    fireEvent.change(input, { target: { value: answer.name } });
+    fireEvent.submit(input.closest("form") as HTMLFormElement);
+    expect(screen.getByTestId("reveal").textContent).toContain(native.local);
   });
 
   test("the right answer opens the reveal with the English names", () => {

@@ -73,8 +73,14 @@ export function Reveal({
               className={holiday.en === star.en ? "rare" : undefined}
             >
               <td>{formatDate(holiday.date)}</td>
-              <td lang="und">{holiday.local}</td>
-              <td>{holiday.en}</td>
+              <td>
+                {holiday.en}
+                {holiday.local !== holiday.en && (
+                  <span className="native" lang="und">
+                    {holiday.local}
+                  </span>
+                )}
+              </td>
             </tr>
           ))}
         </tbody>

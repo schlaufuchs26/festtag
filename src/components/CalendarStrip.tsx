@@ -1,5 +1,5 @@
-import { monthIndex } from "../game";
-import type { Holiday } from "../types";
+import { clueLabel, monthIndex } from "../game";
+import type { Country, Holiday } from "../types";
 
 const MONTHS = ["J", "F", "M", "A", "M", "J", "J", "A", "S", "O", "N", "D"];
 
@@ -8,7 +8,13 @@ const MONTHS = ["J", "F", "M", "A", "M", "J", "J", "A", "S", "O", "N", "D"];
  * holidays glow, the common ones stay grey, so the shape of the year reads
  * before the names do.
  */
-export function CalendarStrip({ holidays }: { holidays: Holiday[] }) {
+export function CalendarStrip({
+  holidays,
+  country,
+}: {
+  holidays: Holiday[];
+  country: Country;
+}) {
   const byMonth = MONTHS.map((_, index) =>
     holidays.filter((h) => monthIndex(h.date) === index),
   );
@@ -22,8 +28,8 @@ export function CalendarStrip({ holidays }: { holidays: Holiday[] }) {
             {(byMonth[index] ?? []).map((holiday) => (
               <div
                 className="dot"
-                key={holiday.date + holiday.local}
-                title={holiday.local}
+                key={holiday.date + holiday.en}
+                title={clueLabel(holiday, country)}
               />
             ))}
           </div>

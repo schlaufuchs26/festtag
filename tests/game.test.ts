@@ -1,6 +1,8 @@
 import { describe, expect, test } from "bun:test";
 import dataset from "../src/data/holidays.json";
+import { NEUTRAL_LABELS } from "../src/data/neutral-labels";
 import {
+  clueLabel,
   filterCountries,
   flagEmoji,
   formatDate,
@@ -15,11 +17,12 @@ import {
   rarestHoliday,
   rarityIndex,
   rarityOf,
+  refersToCountry,
   resolveGuess,
   sharedWith,
   visibleHolidays,
 } from "../src/game";
-import type { Country, Dataset } from "../src/types";
+import type { Country, Dataset, Holiday } from "../src/types";
 
 const data = dataset as unknown as Dataset;
 const byCode = (code: string): Country =>
@@ -212,5 +215,74 @@ describe("resolveGuess", () => {
     expect(resolveGuess("Atlantis", data.countries, answer).kind).toBe(
       "unknown",
     );
+  });
+});
+
+describe("clueLabel", () => {
+  test("shows the English name, never the native one", () => {
+    const czech = byCode("CZ");
+    const holiday = czech.holidays.find((h) => h.local !== h.en);
+    if (!holiday) throw new Error("no holiday with a native name");
+    expect(clueLabel(holiday, czech)).toBe(holiday.en);
+    expect(clueLabel(holiday, czech)).not.toBe(holiday.local);
+  });
+
+  test("never names the country it is asking for", () => {
+    // A label like "Canada Day" would solve the round without the calendar,
+    // so the clue card uses the neutral entry instead. This walks the whole
+    // dataset: a new country-naming label fails here until it has one.
+    const leaks: string[] = [];
+    for (const country of data.countries) {
+      for (const holiday of country.holidays) {
+        const label = clueLabel(holiday, country);
+        if (refersToCountry(label, country)) {
+          leaks.push(`${country.code}: ${holiday.en} -> ${label}`);
+        }
+      }
+    }
+    expect(leaks).toEqual([]);
+  });
+
+  test("a country-naming label keeps its meaning in the neutral form", () => {
+    const canada = byCode("CA");
+    const canadaDay = canada.holidays.find((h) => h.en === "Canada Day");
+    if (!canadaDay) throw new Error("no Canada Day");
+    expect(clueLabel(canadaDay, canada)).toBe("National Day");
+  });
+});
+
+describe("neutral labels", () => {
+  test("every country-naming label has an entry", () => {
+    // The fallback in clueLabel hides a leak, but it also throws the holiday's
+    // meaning away; this test names the entry that is missing.
+    const missing = data.countries.flatMap((country) =>
+      country.holidays
+        .filter((holiday) => refersToCountry(holiday.en, country))
+        .map((holiday) => `${country.code}|${holiday.en}`)
+        .filter((key) => !(key in NEUTRAL_LABELS)),
+    );
+    expect(missing).toEqual([]);
+  });
+
+  test("every entry still matches a holiday in the data", () => {
+    // A data refresh that renames a holiday leaves the entry dead; then the
+    // leak test above fails for the new name and this one names the stale key.
+    const stale = Object.keys(NEUTRAL_LABELS).filter((key) => {
+      const [code, name] = key.split("|") as [string, string];
+      const country = data.countries.find((c) => c.code === code);
+      return !country?.holidays.some((h) => h.en === name);
+    });
+    expect(stale).toEqual([]);
+  });
+
+  test("cuts the country out when the table has no entry yet", () => {
+    const canada = byCode("CA");
+    const holiday: Holiday = {
+      date: "2026-07-01",
+      local: "Fête du Canada",
+      en: "Canada Day Parade",
+      days: 1,
+    };
+    expect(clueLabel(holiday, canada)).toBe("Day Parade");
   });
 });

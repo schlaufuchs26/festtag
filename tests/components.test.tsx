@@ -1,9 +1,10 @@
 import { describe, expect, test } from "bun:test";
 import { fireEvent, render, screen } from "@testing-library/react";
 import { GuessBox } from "../src/components/GuessBox";
+import { HolidayList } from "../src/components/HolidayList";
 import { Reveal } from "../src/components/Reveal";
 import dataset from "../src/data/holidays.json";
-import { rarityIndex } from "../src/game";
+import { clueLabel, rarityIndex } from "../src/game";
 import type { Country, Dataset } from "../src/types";
 
 const data = dataset as unknown as Dataset;
@@ -66,6 +67,27 @@ describe("GuessBox", () => {
   });
 });
 
+describe("HolidayList", () => {
+  test("shows the English name and keeps the native one back", () => {
+    const czech = byCode("CZ");
+    const shown = czech.holidays.filter((h) => h.local !== h.en).slice(0, 3);
+    render(<HolidayList holidays={shown} country={czech} />);
+    for (const holiday of shown) {
+      expect(screen.getByText(holiday.en)).toBeInTheDocument();
+      expect(screen.queryByText(holiday.local)).toBeNull();
+    }
+  });
+
+  test("prints a neutral label where the English name gives the country away", () => {
+    const canada = byCode("CA");
+    const canadaDay = canada.holidays.find((h) => h.en === "Canada Day");
+    if (!canadaDay) throw new Error("no Canada Day");
+    render(<HolidayList holidays={[canadaDay]} country={canada} />);
+    expect(screen.queryByText("Canada Day")).toBeNull();
+    expect(screen.getByText(clueLabel(canadaDay, canada))).toBeInTheDocument();
+  });
+});
+
 describe("Reveal", () => {
   const props = {
     countries: data.countries,
@@ -93,6 +115,16 @@ describe("Reveal", () => {
     expect(reveal.textContent).toContain("Youth Day");
     expect(reveal.textContent).toContain("Albania");
     expect(reveal.textContent).toContain("and others");
+  });
+
+  test("prints the native name under the English one", () => {
+    const czech = byCode("CZ");
+    render(<Reveal {...props} answer={czech} />);
+    const reveal = screen.getByTestId("reveal");
+    const native = czech.holidays.find((h) => h.local !== h.en);
+    if (!native) throw new Error("no holiday with a native name");
+    expect(reveal.textContent).toContain(native.en);
+    expect(reveal.textContent).toContain(native.local);
   });
 
   test("the next button hands control back", () => {
